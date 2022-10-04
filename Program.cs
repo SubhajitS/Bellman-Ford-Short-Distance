@@ -81,7 +81,7 @@ namespace Console1
                 //reduce the weight of shortest path by 10%
                 foreach (Edge edge in shortestPath)
                 {
-                    edge.weight *= 0.1;
+                    edge.weight = edge.weight + (edge.weight* 0.1);
                 }
                 distance_from_source = FindShortestDistanceUsingBellmanFord(no_of_vertices, edges);
                 FindShortestPath(edges, distance_from_source, shortestPath);
