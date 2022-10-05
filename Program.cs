@@ -76,8 +76,10 @@ namespace Console1
             string initialWeakLink = string.Join("-", shortestPath.Select(e => e.dest).Append("S1"));
             Console.WriteLine($"Initial weak link {initialWeakLink}");
             string currentWeakLink = initialWeakLink;
-            while(initialWeakLink.Equals(currentWeakLink))
+            Int terminalCounter = 0;
+            while(initialWeakLink.Equals(currentWeakLink) || terminalCounter < 10)
             {
+                terminalCounter++;
                 //reduce the weight of shortest path by 10%
                 foreach (Edge edge in shortestPath)
                 {
