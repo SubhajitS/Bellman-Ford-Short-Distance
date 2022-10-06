@@ -76,7 +76,7 @@ namespace Console1
             string initialWeakLink = string.Join("-", shortestPath.Select(e => e.dest).Append("S1"));
             Console.WriteLine($"Initial weak link {initialWeakLink}");
             string currentWeakLink = initialWeakLink;
-            Int terminalCounter = 0;
+            int terminalCounter = 0;
             while(initialWeakLink.Equals(currentWeakLink) || terminalCounter < 10)
             {
                 terminalCounter++;
