@@ -77,7 +77,7 @@ namespace Console1
             Console.WriteLine($"Initial weak link {initialWeakLink}");
             string currentWeakLink = initialWeakLink;
             int terminalCounter = 0;
-            while(initialWeakLink.Equals(currentWeakLink) || terminalCounter < 10)
+            while(initialWeakLink.Equals(currentWeakLink) && terminalCounter < 10)
             {
                 terminalCounter++;
                 //reduce the weight of shortest path by 10%
@@ -88,8 +88,10 @@ namespace Console1
                 distance_from_source = FindShortestDistanceUsingBellmanFord(no_of_vertices, edges);
                 FindShortestPath(edges, distance_from_source, shortestPath);
                 currentWeakLink = string.Join("-", shortestPath.Select(e => e.dest).Append("S1"));
-                Console.WriteLine($"New weak link {currentWeakLink}");
+                Console.WriteLine($"Path is unchanged - {currentWeakLink}");
             }
+            if(!initialWeakLink.Equals(currentWeakLink))
+                Console.WriteLine($"Path has changed - {currentWeakLink}");
         }
 
         private static void FindShortestPath(List<Edge> edges, Dictionary<string, double> distance_from_source, List<Edge> shortestPath)
