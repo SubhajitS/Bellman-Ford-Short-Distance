@@ -12,66 +12,66 @@ namespace Console1
     {
         public static void Main(string[] args)
         {
-            var no_of_vertices = 8;
-            var edges = new List<Edge>{
-                new Edge{
-                    src = "S1",
-                    dest = "S2",
-                    weight = -0.35
-                },
-                new Edge{
-                    src = "S1",
-                    dest = "S3",
-                    weight = -0.35
-                },
-                new Edge{
-                    src = "S2",
-                    dest = "S3",
-                    weight = -0.91
-                },
-                new Edge{
-                    src = "S2",
-                    dest = "S4",
-                    weight = -0.22
-                },
-                new Edge{
-                    src = "S2",
-                    dest = "S5",
-                    weight = -0.91
-                },
-                new Edge{
-                    src = "S3",
-                    dest = "S5",
-                    weight = -0.35
-                },
-                new Edge{
-                    src = "S4",
-                    dest = "S5",
-                    weight = -0.35
-                },
-                new Edge{
-                    src = "S5",
-                    dest = "S6",
-                    weight = -1.2
-                },
-                new Edge{
-                    src = "S6",
-                    dest = "S7",
-                    weight = -1.2
-                },
-                new Edge{
-                    src = "S7",
-                    dest = "S8",
-                    weight = -1.6
-                }
-            };
+            var (no_of_vertices, edges) = GetInput();
+            // var edges = new List<Edge>{
+            //     new Edge{
+            //         src = "S1",
+            //         dest = "S2",
+            //         weight = -0.35
+            //     },
+            //     new Edge{
+            //         src = "S1",
+            //         dest = "S3",
+            //         weight = -0.35
+            //     },
+            //     new Edge{
+            //         src = "S2",
+            //         dest = "S3",
+            //         weight = -0.91
+            //     },
+            //     new Edge{
+            //         src = "S2",
+            //         dest = "S4",
+            //         weight = -0.22
+            //     },
+            //     new Edge{
+            //         src = "S2",
+            //         dest = "S5",
+            //         weight = -0.91
+            //     },
+            //     new Edge{
+            //         src = "S3",
+            //         dest = "S5",
+            //         weight = -0.35
+            //     },
+            //     new Edge{
+            //         src = "S4",
+            //         dest = "S5",
+            //         weight = -0.35
+            //     },
+            //     new Edge{
+            //         src = "S5",
+            //         dest = "S6",
+            //         weight = -1.2
+            //     },
+            //     new Edge{
+            //         src = "S6",
+            //         dest = "S7",
+            //         weight = -1.2
+            //     },
+            //     new Edge{
+            //         src = "S7",
+            //         dest = "S8",
+            //         weight = -1.6
+            //     }
+            // };
 
             
             Dictionary<string, double> distance_from_source = FindShortestDistanceUsingBellmanFord(no_of_vertices, edges);
 
             //Backtrack to determine the shortest path
             var shortestPath = new List<Edge>();
-            FindShortestPath(edges, distance_from_source, shortestPath);
+            FindShortestPath(edges, distance_from_source, shortestPath, no_of_vertices);
 
             string initialWeakLink = string.Join("-", shortestPath.Select(e => e.dest).Append("S1"));
             Console.WriteLine($"Initial weak link {initialWeakLink}");
@@ -86,7 +86,7 @@ namespace Console1
                     edge.weight = edge.weight + (edge.weight* 0.1);
                 }
                 distance_from_source = FindShortestDistanceUsingBellmanFord(no_of_vertices, edges);
-                FindShortestPath(edges, distance_from_source, shortestPath);
+                FindShortestPath(edges, distance_from_source, shortestPath, no_of_vertices);
                 currentWeakLink = string.Join("-", shortestPath.Select(e => e.dest).Append("S1"));
                 Console.WriteLine($"Path is unchanged - {currentWeakLink}");
             }
@@ -94,11 +94,46 @@ namespace Console1
                 Console.WriteLine($"Path has changed - {currentWeakLink}");
         }
 
-        private static void FindShortestPath(List<Edge> edges, Dictionary<string, double> distance_from_source, List<Edge> shortestPath)
+        private static (int no_of_vertices, List<Edge> edges) GetInput() {
+            Console.WriteLine("Please note vertices would be named from S1, S2,...Sn, where S1 would be the starting point and Sn would be the destination");
+            Console.WriteLine("Total number of Vertices: ");
+            if (!int.TryParse(Console.ReadLine(), out var no_of_vertices))
+                Console.WriteLine("Error! invalid input provided. Integers expected.");
+
+            Console.WriteLine("Total number of Edges: ");
+            if(!int.TryParse(Console.ReadLine(), out var no_of_edges))
+                Console.WriteLine("Error! invalid input provided. Integers expected.");
+
+            Console.WriteLine("Provide the edge details as following");
+            string src, dest;
+            double weight = 0.0;
+            var edges = new List<Edge>();
+            for(int i=0;i<no_of_edges;i++)
+            {
+                Console.WriteLine($"Edge {i+1} Starting vertice (e.g. S1): ");
+                src = Console.ReadLine()??string.Empty;
+                Console.WriteLine($"Edge {i+1} Destination vertice (e.g. S2): ");
+                dest = Console.ReadLine()??string.Empty;
+                Console.WriteLine($"Distance between {src} and {dest}: ");
+                while(!Double.TryParse(Console.ReadLine(), out weight))
+                {
+                    Console.WriteLine("Error! Provide a valid double value");
+                }
+                edges.Add(new Edge{
+                    src = src,
+                    dest = dest,
+                    weight = weight
+                });
+            }
+
+            return (no_of_vertices, edges);
+        }
+
+        private static void FindShortestPath(List<Edge> edges, Dictionary<string, double> distance_from_source, List<Edge> shortestPath, int no_of_vertices)
         {
             shortestPath.Clear();
             var starting_vertice = "S1";
-            var destination_vertice = "S8";
+            var destination_vertice = $"S{no_of_vertices}";
             string selectedVertices = destination_vertice;
             while (selectedVertices != starting_vertice)
             {
