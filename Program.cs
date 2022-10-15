@@ -1,4 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using System.Reflection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
 namespace Console1
 {
     public class Edge 
@@ -12,60 +16,7 @@ namespace Console1
     {
         public static void Main(string[] args)
         {
-            var (no_of_vertices, edges) = GetInput();
-            // var edges = new List<Edge>{
-            //     new Edge{
-            //         src = "S1",
-            //         dest = "S2",
-            //         weight = -0.35
-            //     },
-            //     new Edge{
-            //         src = "S1",
-            //         dest = "S3",
-            //         weight = -0.35
-            //     },
-            //     new Edge{
-            //         src = "S2",
-            //         dest = "S3",
-            //         weight = -0.91
-            //     },
-            //     new Edge{
-            //         src = "S2",
-            //         dest = "S4",
-            //         weight = -0.22
-            //     },
-            //     new Edge{
-            //         src = "S2",
-            //         dest = "S5",
-            //         weight = -0.91
-            //     },
-            //     new Edge{
-            //         src = "S3",
-            //         dest = "S5",
-            //         weight = -0.35
-            //     },
-            //     new Edge{
-            //         src = "S4",
-            //         dest = "S5",
-            //         weight = -0.35
-            //     },
-            //     new Edge{
-            //         src = "S5",
-            //         dest = "S6",
-            //         weight = -1.2
-            //     },
-            //     new Edge{
-            //         src = "S6",
-            //         dest = "S7",
-            //         weight = -1.2
-            //     },
-            //     new Edge{
-            //         src = "S7",
-            //         dest = "S8",
-            //         weight = -1.6
-            //     }
-            // };
-
+            var (no_of_vertices, edges, weight_increment_factor, threshold_minimum_distance) = GetInputs("configuration.json");
             
             Dictionary<string, double> distance_from_source = FindShortestDistanceUsingBellmanFord(no_of_vertices, edges);
 
@@ -74,24 +25,25 @@ namespace Console1
             FindShortestPath(edges, distance_from_source, shortestPath, no_of_vertices);
 
             string initialWeakLink = string.Join("-", shortestPath.Select(e => e.dest).Append("S1"));
-            Console.WriteLine($"Initial weak link {initialWeakLink}");
+            Console.WriteLine($"Initial weak link {initialWeakLink} - distance: {distance_from_source[$"S{no_of_vertices}"]}");
             string currentWeakLink = initialWeakLink;
             int terminalCounter = 0;
-            while(initialWeakLink.Equals(currentWeakLink) && terminalCounter < 10)
+            while(initialWeakLink.Equals(currentWeakLink) && terminalCounter < 50 && distance_from_source[$"S{no_of_vertices}"]<threshold_minimum_distance)
             {
+                Console.WriteLine("----------- New iteration ---------------");
                 terminalCounter++;
                 //reduce the weight of shortest path by 10%
                 foreach (Edge edge in shortestPath)
                 {
-                    edge.weight = edge.weight + (edge.weight* 0.1);
+                    edge.weight = edge.weight + Math.Abs(edge.weight* weight_increment_factor);
                 }
                 distance_from_source = FindShortestDistanceUsingBellmanFord(no_of_vertices, edges);
                 FindShortestPath(edges, distance_from_source, shortestPath, no_of_vertices);
                 currentWeakLink = string.Join("-", shortestPath.Select(e => e.dest).Append("S1"));
-                Console.WriteLine($"Path is unchanged - {currentWeakLink}");
+                Console.WriteLine($"Shortest path is - {currentWeakLink} - distance: {distance_from_source[$"S{no_of_vertices}"]}");
             }
             if(!initialWeakLink.Equals(currentWeakLink))
-                Console.WriteLine($"Path has changed - {currentWeakLink}");
+                Console.WriteLine($"Path has changed - {currentWeakLink} - distance: {distance_from_source[$"S{no_of_vertices}"]}");
         }
 
         private static (int no_of_vertices, List<Edge> edges) GetInput() {
@@ -127,6 +79,18 @@ namespace Console1
             }
 
             return (no_of_vertices, edges);
+        }
+
+        private static (int no_of_vertices, List<Edge> edges, double weight_increment_factor, double threshold_minimum_distance) GetInputs(string configurationFileName)
+        {
+            string executingAssemblyRoot = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)??Directory.GetCurrentDirectory();
+            var path = Path.Combine(executingAssemblyRoot, configurationFileName);
+            var content = JObject.Parse(File.ReadAllText(path));
+            var no_of_vertices = content.SelectToken("no_of_vertices")?.Value<int>()??0;
+            var weight_increment_factor = content.SelectToken("weight_increment_factor")?.Value<double>()??0.1;
+            var threshold_minimum_distance = content.SelectToken("threshold_minimum_distance")?.Value<double>()??0.0;
+            var edges = JsonConvert.DeserializeObject<List<Edge>>(content.SelectToken("edges")?.Value<JArray>()?.ToString()?? "[]")??new List<Edge>();
+            return (no_of_vertices, edges, weight_increment_factor,threshold_minimum_distance);
         }
 
         private static void FindShortestPath(List<Edge> edges, Dictionary<string, double> distance_from_source, List<Edge> shortestPath, int no_of_vertices)

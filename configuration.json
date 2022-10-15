@@ -1,0 +1,57 @@
+{
+  "no_of_vertices": 8,
+  "weight_increment_factor": 0.1,
+  "threshold_minimum_distance": 0.0,
+  "edges": [
+    {
+      "src": "S1",
+      "dest": "S3",
+      "weight": -0.3
+    },
+    {
+      "src": "S1",
+      "dest": "S2",
+      "weight": -0.6
+    },
+    {
+      "src": "S2",
+      "dest": "S3",
+      "weight": -0.7
+    },
+    {
+      "src": "S3",
+      "dest": "S5",
+      "weight": -0.6
+    },
+    {
+      "src": "S2",
+      "dest": "S5",
+      "weight": -0.3
+    },
+    {
+      "src": "S2",
+      "dest": "S4",
+      "weight": -0.4
+    },
+    {
+      "src": "S4",
+      "dest": "S5",
+      "weight": -0.6
+    },
+    {
+      "src": "S5",
+      "dest": "S6",
+      "weight": -0.7
+    },
+    {
+      "src": "S6",
+      "dest": "S7",
+      "weight": -0.8
+    },
+    {
+      "src": "S7",
+      "dest": "S8",
+      "weight": -0.9
+    }
+  ]
+}
