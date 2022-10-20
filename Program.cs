@@ -28,7 +28,7 @@ namespace Console1
             Console.WriteLine($"Initial weak link {initialWeakLink} - distance: {distance_from_source[$"S{no_of_vertices}"]}");
             string currentWeakLink = initialWeakLink;
             int terminalCounter = 0;
-            while(initialWeakLink.Equals(currentWeakLink) && terminalCounter < 50 && distance_from_source[$"S{no_of_vertices}"]<threshold_minimum_distance)
+            while(terminalCounter < 50 && distance_from_source[$"S{no_of_vertices}"]<threshold_minimum_distance)
             {
                 Console.WriteLine("----------- New iteration ---------------");
                 terminalCounter++;
