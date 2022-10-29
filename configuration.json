@@ -2,6 +2,7 @@
   "no_of_vertices": 8,
   "weight_increment_factor": 0.1,
   "threshold_minimum_distance": 0.0,
+  "terminal_counter": 500,
   "edges": [
     {
       "src": "S1",
