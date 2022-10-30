@@ -16,7 +16,7 @@ namespace Console1
     {
         public static void Main(string[] args)
         {
-            var (no_of_vertices, edges, weight_increment_factor, threshold_minimum_distance, terminal_counter) = GetInputs("configuration.json");
+            var (no_of_vertices, edges, weight_increment_factor, threshold_minimum_distance, terminal_counter, edge_saturation_threshold) = GetInputs("configuration.json");
             
             Dictionary<string, double> distance_from_source = FindShortestDistanceUsingBellmanFord(no_of_vertices, edges);
 
@@ -24,30 +24,35 @@ namespace Console1
             var shortestPath = new List<Edge>();
             FindShortestPath(edges, distance_from_source, shortestPath, no_of_vertices);
 
-            string initialWeakLink = string.Join("-", shortestPath.Select(e => e.dest).Append("S1"));
-            Console.WriteLine($"Initial weak link {initialWeakLink} - distance: {distance_from_source[$"S{no_of_vertices}"]}");
-            string currentWeakLink = initialWeakLink;
+            string initialWeakPathString = string.Join("-", shortestPath.Select(e => e.dest).Append("S1"));
+            Console.WriteLine($"Initial weak link {initialWeakPathString} - distance: {distance_from_source[$"S{no_of_vertices}"]}");
+            string currentWeakPathString = initialWeakPathString;
             int terminalCounter = 0;
             while(terminalCounter < terminal_counter && distance_from_source[$"S{no_of_vertices}"]<threshold_minimum_distance)
             {
                 Console.WriteLine("----------- New iteration ---------------");
                 terminalCounter++;
                 //increase the weight of weakest edge of shortest path by 10%
-                Edge weakestEdge = shortestPath.FirstOrDefault();
-                foreach (Edge edge in shortestPath)
+                Edge weakestEdge = null;
+                if(shortestPath.Any(e => e.weight<edge_saturation_threshold))
                 {
-                    if(weakestEdge?.weight>edge.weight)
-                        weakestEdge = edge;
+                    foreach (Edge edge in shortestPath.Where(e => e.weight<edge_saturation_threshold))
+                    {
+                        if(weakestEdge== null)
+                            weakestEdge = edge;
+                        else if(weakestEdge?.weight>edge.weight)
+                            weakestEdge = edge;
+                    }
+                    if(weakestEdge!= null)
+                        weakestEdge.weight = weakestEdge.weight + Math.Abs(weakestEdge.weight* weight_increment_factor);
                 }
-                if(weakestEdge!= null)
-                    weakestEdge.weight = weakestEdge.weight + Math.Abs(weakestEdge.weight* weight_increment_factor);
                 distance_from_source = FindShortestDistanceUsingBellmanFord(no_of_vertices, edges);
                 FindShortestPath(edges, distance_from_source, shortestPath, no_of_vertices);
-                currentWeakLink = string.Join("-", shortestPath.Select(e => e.dest).Append("S1"));
-                Console.WriteLine($"Shortest path is - {currentWeakLink} - distance: {distance_from_source[$"S{no_of_vertices}"]}");
+                currentWeakPathString = string.Join("-", shortestPath.Select(e => e.dest).Append("S1"));
+                Console.WriteLine($"Shortest path is - {currentWeakPathString} - distance: {distance_from_source[$"S{no_of_vertices}"]}");
             }
-            if(!initialWeakLink.Equals(currentWeakLink))
-                Console.WriteLine($"Path has changed - {currentWeakLink} - distance: {distance_from_source[$"S{no_of_vertices}"]}");
+            if(!initialWeakPathString.Equals(currentWeakPathString))
+                Console.WriteLine($"Path has changed - {currentWeakPathString} - distance: {distance_from_source[$"S{no_of_vertices}"]}");
         }
 
         private static (int no_of_vertices, List<Edge> edges) GetInput() {
@@ -85,7 +90,7 @@ namespace Console1
             return (no_of_vertices, edges);
         }
 
-        private static (int no_of_vertices, List<Edge> edges, double weight_increment_factor, double threshold_minimum_distance, int terminal_counter) GetInputs(string configurationFileName)
+        private static (int no_of_vertices, List<Edge> edges, double weight_increment_factor, double threshold_minimum_distance, int terminal_counter, double edge_saturation_threshold) GetInputs(string configurationFileName)
         {
             string executingAssemblyRoot = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)??Directory.GetCurrentDirectory();
             var path = Path.Combine(executingAssemblyRoot, configurationFileName);
@@ -94,8 +99,9 @@ namespace Console1
             var terminal_counter = content.SelectToken("terminal_counter")?.Value<int>()??50;
             var weight_increment_factor = content.SelectToken("weight_increment_factor")?.Value<double>()??0.1;
             var threshold_minimum_distance = content.SelectToken("threshold_minimum_distance")?.Value<double>()??0.0;
+            var edge_saturation_threshold = content.SelectToken("edge_saturation_threshold")?.Value<double>()??0.0;
             var edges = JsonConvert.DeserializeObject<List<Edge>>(content.SelectToken("edges")?.Value<JArray>()?.ToString()?? "[]")??new List<Edge>();
-            return (no_of_vertices, edges, weight_increment_factor,threshold_minimum_distance, terminal_counter);
+            return (no_of_vertices, edges, weight_increment_factor,threshold_minimum_distance, terminal_counter, edge_saturation_threshold);
         }
 
         private static void FindShortestPath(List<Edge> edges, Dictionary<string, double> distance_from_source, List<Edge> shortestPath, int no_of_vertices)

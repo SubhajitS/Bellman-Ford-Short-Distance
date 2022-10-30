@@ -3,6 +3,7 @@
   "weight_increment_factor": 0.1,
   "threshold_minimum_distance": 0.0,
   "terminal_counter": 500,
+  "edge_saturation_threshold": 0.0,
   "edges": [
     {
       "src": "S1",
